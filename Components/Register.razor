@@ -1,5 +1,8 @@
 @page "/register"
 @using System.ComponentModel.DataAnnotations
+@using DPEDAdmissionSystem.Models
+@inject DPEDAdmissionSystem.Services.AuthService AuthService
+@inject NavigationManager Navigation
 
 <PageTitle>Register</PageTitle>
 
@@ -55,13 +58,26 @@
     private RegisterModel model = new();
     private string? _error;
 
-    private void HandleRegister()
+    private async Task HandleRegister()
     {
-        // TODO: Call your API or redirect
-        // Example:
-        // NavigationManager.NavigateTo("/dashboard");
+        var request = new RegisterRequest
+        {
+            Name = model.Name,
+            Email = model.Email,
+            MobileNumber = model.MobileNumber,
+            Password = model.Password
+        };
 
-        Console.WriteLine("User Registered: " + model.Email);
+        var result = await AuthService.Register(request);
+
+        if (result.Success)
+        {
+            Navigation.NavigateTo("/login");
+        }
+        else
+        {
+            _error = result.Message;
+        }
     }
 
     public class RegisterModel

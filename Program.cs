@@ -12,7 +12,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddHttpClient();
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
