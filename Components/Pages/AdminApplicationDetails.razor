@@ -1,0 +1,55 @@
+@page "/admin/application/{Id:int}"
+@attribute [Authorize(Roles = "Admin")]
+@inject IApplicationService ApplicationService
+
+<PageTitle>Application Details</PageTitle>
+
+@if (_application is null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <MudPaper Class="pa-6">
+        <MudText Typo="Typo.h4" GutterBottom="true">Application Details</MudText>
+        <MudText Typo="Typo.subtitle1" GutterBottom="true">Registration No: @_application.RegistrationNumber</MudText>
+
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.h6">Personal</MudText>
+                <MudSimpleTable Dense="true">
+                    <tbody>
+                        <tr><td>Name</td><td>@_application.CandidateName</td></tr>
+                        <tr><td>Father</td><td>@_application.FatherName</td></tr>
+                        <tr><td>Mother</td><td>@_application.MotherName</td></tr>
+                        <tr><td>DOB</td><td>@_application.DateOfBirth?.ToString("dd-MM-yyyy")</td></tr>
+                        <tr><td>Category</td><td>@_application.Category</td></tr>
+                    </tbody>
+                </MudSimpleTable>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.h6">Status</MudText>
+                <MudSimpleTable Dense="true">
+                    <tbody>
+                        <tr><td>Application Status</td><td>@_application.Status</td></tr>
+                        <tr><td>Payment Status</td><td>@_application.Payment?.Status</td></tr>
+                        <tr><td>Amount</td><td>₹@(_application.Payment?.Amount ?? 0)</td></tr>
+                        <tr><td>Transaction Id</td><td>@_application.Payment?.TransactionId</td></tr>
+                    </tbody>
+                </MudSimpleTable>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private StudentApplication? _application;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _application = await ApplicationService.GetApplicationWithDetailsAsync(Id);
+    }
+}

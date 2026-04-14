@@ -1,0 +1,26 @@
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(Program).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
+                <NotAuthorized>
+                    <LayoutView Layout="@typeof(Layout.MainLayout)">
+                        <MudPaper Class="pa-8 mt-6 mx-auto auth-card" Elevation="2">
+                            <MudText Typo="Typo.h5" GutterBottom="true">Access denied</MudText>
+                            <MudText Typo="Typo.body1">Please sign in with an authorized account.</MudText>
+                            <MudButton Class="mt-4" Variant="Variant.Filled" Color="Color.Primary" Href="/login">Go to login</MudButton>
+                        </MudPaper>
+                    </LayoutView>
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(Layout.MainLayout)">
+                <MudPaper Class="pa-8 mt-6 mx-auto auth-card" Elevation="2">
+                    <MudText Typo="Typo.h5" GutterBottom="true">Page not found</MudText>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/">Return home</MudButton>
+                </MudPaper>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

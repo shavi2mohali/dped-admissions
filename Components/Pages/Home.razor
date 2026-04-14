@@ -1,0 +1,65 @@
+@page "/"
+@attribute [Authorize]
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IApplicationService ApplicationService
+
+<PageTitle>Dashboard</PageTitle>
+
+<MudGrid>
+    <MudItem xs="12">
+        <MudText Typo="Typo.h4">Student Dashboard</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">Track your Diploma in Physical Education application in one place.</MudText>
+    </MudItem>
+
+    @if (_application is not null)
+    {
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4 stat-card">
+                <MudText Typo="Typo.subtitle2">Application Status</MudText>
+                <MudText Typo="Typo.h5">@_application.Status</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4 stat-card">
+                <MudText Typo="Typo.subtitle2">Registration Number</MudText>
+                <MudText Typo="Typo.h5">@(_application.RegistrationNumber ?? "Not generated yet")</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4 stat-card">
+                <MudText Typo="Typo.subtitle2">Fee Status</MudText>
+                <MudText Typo="Typo.h5">@(_application.Payment?.Status.ToString() ?? "Pending")</MudText>
+            </MudPaper>
+        </MudItem>
+    }
+
+    <MudItem xs="12">
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h6" GutterBottom="true">Admission Flow</MudText>
+            <MudTimeline>
+                <MudTimelineItem Color="Color.Success">Registration complete</MudTimelineItem>
+                <MudTimelineItem Color="@(_application is null || string.IsNullOrWhiteSpace(_application.FatherName) ? Color.Default : Color.Success)">Application form saved</MudTimelineItem>
+                <MudTimelineItem Color="@(_application?.Payment?.Status == PaymentStatus.Success ? Color.Success : Color.Warning)">Payment confirmation</MudTimelineItem>
+                <MudTimelineItem Color="@(!string.IsNullOrWhiteSpace(_application?.RegistrationNumber) ? Color.Success : Color.Default)">Registration number generated</MudTimelineItem>
+                <MudTimelineItem Color="@(!string.IsNullOrWhiteSpace(_application?.RegistrationNumber) ? Color.Success : Color.Default)">Print form ready</MudTimelineItem>
+            </MudTimeline>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private StudentApplication? _application;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+        if (user is null)
+        {
+            return;
+        }
+
+        _application = await ApplicationService.GetOrCreateApplicationAsync(user);
+    }
+}

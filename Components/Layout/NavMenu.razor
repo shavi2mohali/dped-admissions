@@ -1,0 +1,26 @@
+<MudNavMenu Dense="true" Rounded="true" Class="pa-2">
+    <MudText Typo="Typo.overline" Class="px-4 pt-2">Navigation</MudText>
+    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Dashboard</MudNavLink>
+
+    <AuthorizeView>
+        <Authorized>
+            <MudNavLink Href="/apply" Icon="@Icons.Material.Filled.Description">Apply</MudNavLink>
+            <MudNavLink Href="/payment" Icon="@Icons.Material.Filled.Payments">Payment</MudNavLink>
+            <MudNavLink Href="/print-form" Icon="@Icons.Material.Filled.Print">Print Form</MudNavLink>
+        </Authorized>
+    </AuthorizeView>
+
+    <AuthorizeView Roles="Admin">
+        <MudDivider Class="my-2" />
+        <MudText Typo="Typo.overline" Class="px-4">Administration</MudText>
+        <MudNavLink Href="/admin" Icon="@Icons.Material.Filled.AdminPanelSettings">Admin Dashboard</MudNavLink>
+    </AuthorizeView>
+
+    <AuthorizeView>
+        <NotAuthorized>
+            <MudDivider Class="my-2" />
+            <MudNavLink Href="/register" Icon="@Icons.Material.Filled.PersonAdd">Register</MudNavLink>
+            <MudNavLink Href="/login" Icon="@Icons.Material.Filled.Login">Login</MudNavLink>
+        </NotAuthorized>
+    </AuthorizeView>
+</MudNavMenu>

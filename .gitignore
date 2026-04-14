@@ -1,0 +1,22 @@
+# Build folders
+bin/
+obj/
+
+# Visual Studio
+.vs/
+
+# User files
+*.user
+*.suo
+
+# Local configs
+appsettings.Development.json
+
+# NuGet / local env
+.nuget/
+.dotnet-home/
+.home/
+
+# OS files
+.DS_Store
+Thumbs.db

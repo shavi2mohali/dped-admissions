@@ -1,0 +1,87 @@
+@page "/admin"
+@attribute [Authorize(Roles = "Admin")]
+@inject IApplicationService ApplicationService
+@inject ICsvExportService CsvExportService
+@inject IJSRuntime JS
+
+<PageTitle>Admin Dashboard</PageTitle>
+
+<MudPaper Class="pa-6 mb-4">
+    <MudText Typo="Typo.h4" GutterBottom="true">Admin Dashboard</MudText>
+    <MudGrid>
+        <MudItem xs="12" md="4">
+            <MudTextField @bind-Value="_search" Label="Search by name / registration number" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="3">
+            <MudSelect T="CategoryType?" @bind-Value="_category" Label="Category" Variant="Variant.Outlined" Clearable="true">
+                @foreach (var category in Enum.GetValues<CategoryType>())
+                {
+                    <MudSelectItem Value="@((CategoryType?)category)">@category</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" md="3">
+            <MudSelect T="PaymentStatus?" @bind-Value="_paymentStatus" Label="Payment Status" Variant="Variant.Outlined" Clearable="true">
+                @foreach (var status in Enum.GetValues<PaymentStatus>())
+                {
+                    <MudSelectItem Value="@((PaymentStatus?)status)">@status</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" md="2" Class="d-flex align-center">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoadApplicationsAsync">Filter</MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudPaper Class="pa-4">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h6">Applications</MudText>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ExportCsvAsync">Export CSV</MudButton>
+    </MudStack>
+
+    <MudTable Items="_applications" Hover="true" Dense="true">
+        <HeaderContent>
+            <MudTh>Registration No</MudTh>
+            <MudTh>Name</MudTh>
+            <MudTh>Category</MudTh>
+            <MudTh>Payment</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh>Action</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Registration">@context.RegistrationNumber</MudTd>
+            <MudTd DataLabel="Name">@context.CandidateName</MudTd>
+            <MudTd DataLabel="Category">@context.Category</MudTd>
+            <MudTd DataLabel="Payment">@context.Payment?.Status</MudTd>
+            <MudTd DataLabel="Status">@context.Status</MudTd>
+            <MudTd DataLabel="Action">
+                <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Primary" Href="@($"/admin/application/{context.Id}")">View</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
+
+@code {
+    private List<StudentApplication> _applications = [];
+    private string? _search;
+    private CategoryType? _category;
+    private PaymentStatus? _paymentStatus;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadApplicationsAsync();
+    }
+
+    private async Task LoadApplicationsAsync()
+    {
+        _applications = await ApplicationService.SearchApplicationsAsync(_search, _category, _paymentStatus);
+    }
+
+    private async Task ExportCsvAsync()
+    {
+        var bytes = CsvExportService.ExportApplications(_applications);
+        var base64 = Convert.ToBase64String(bytes);
+        await JS.InvokeVoidAsync("downloadFile", "applications.csv", "text/csv", base64);
+    }
+}

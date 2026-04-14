@@ -1,0 +1,42 @@
+@page "/login"
+@inject NavigationManager NavigationManager
+
+<PageTitle>Login</PageTitle>
+
+<MudPaper Class="pa-6 mx-auto auth-card" Elevation="3">
+    <MudText Typo="Typo.h4" GutterBottom="true">Sign In</MudText>
+
+    <form method="post" action="/account/login">
+        <AntiforgeryToken />
+
+        <div class="form-field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" required />
+        </div>
+        <div class="form-field">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" required />
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(_error))
+        {
+            <MudAlert Severity="Severity.Error" Dense="true" Class="mb-4">@_error</MudAlert>
+        }
+
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true">Login</MudButton>
+    </form>
+</MudPaper>
+
+@code {
+    private string? _error;
+
+    protected override void OnInitialized()
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        if (!string.IsNullOrWhiteSpace(uri.Query))
+        {
+            var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+            _error = query.TryGetValue("error", out var value) ? value.ToString() : null;
+        }
+    }
+}

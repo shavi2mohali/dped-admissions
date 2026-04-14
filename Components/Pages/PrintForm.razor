@@ -1,0 +1,103 @@
+@page "/print-form"
+@attribute [Authorize]
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IApplicationService ApplicationService
+@inject IJSRuntime JS
+
+<PageTitle>Print Form</PageTitle>
+
+@if (_application is null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else if (_application.Payment?.Status != PaymentStatus.Success)
+{
+    <MudAlert Severity="Severity.Warning">
+        Please complete payment before printing the application form.
+    </MudAlert>
+}
+else
+{
+    <MudPaper Class="pa-6 print-sheet">
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4 no-print">
+            <MudText Typo="Typo.h4">Printable Application Form</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="PrintAsync">Print</MudButton>
+        </MudStack>
+
+        <MudText Typo="Typo.h5" Align="Align.Center">Diploma in Physical Education (2-Year Course)</MudText>
+        <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-4">Registration No: @_application.RegistrationNumber</MudText>
+
+        <MudDivider Class="my-4" />
+
+        <MudText Typo="Typo.h6">Personal Details</MudText>
+        <MudSimpleTable Dense="true">
+            <tbody>
+                <tr><td>Candidate Name</td><td>@_application.CandidateName</td></tr>
+                <tr><td>Father Name</td><td>@_application.FatherName</td></tr>
+                <tr><td>Mother Name</td><td>@_application.MotherName</td></tr>
+                <tr><td>DOB</td><td>@_application.DateOfBirth?.ToString("dd-MM-yyyy")</td></tr>
+                <tr><td>Gender</td><td>@_application.Gender</td></tr>
+                <tr><td>Marital Status</td><td>@_application.MaritalStatus</td></tr>
+                <tr><td>Category</td><td>@GetCategoryLabel(_application.Category)</td></tr>
+            </tbody>
+        </MudSimpleTable>
+
+        <MudText Typo="Typo.h6" Class="mt-4">Address & Contact</MudText>
+        <MudSimpleTable Dense="true">
+            <tbody>
+                <tr><td>Address</td><td>@_application.Address</td></tr>
+                <tr><td>Tehsil</td><td>@_application.Tehsil</td></tr>
+                <tr><td>District</td><td>@_application.District</td></tr>
+                <tr><td>Pin Code</td><td>@_application.PinCode</td></tr>
+                <tr><td>Mobile Number</td><td>@_application.MobileNumber</td></tr>
+                <tr><td>Email</td><td>@_application.Email</td></tr>
+            </tbody>
+        </MudSimpleTable>
+
+        <MudText Typo="Typo.h6" Class="mt-4">Academic Details</MudText>
+        <MudSimpleTable Dense="true">
+            <tbody>
+                <tr><td>10th Roll Number</td><td>@_application.AcademicDetail.TenthRollNumber</td></tr>
+                <tr><td>10th Year of Passing</td><td>@_application.AcademicDetail.TenthYearOfPassing</td></tr>
+                <tr><td>10th Board</td><td>@_application.AcademicDetail.TenthBoardName</td></tr>
+                <tr><td>10th Marks / Percentage</td><td>@_application.AcademicDetail.TenthTotalMarks / @_application.AcademicDetail.TenthPercentage%</td></tr>
+                <tr><td>12th Roll Number</td><td>@_application.AcademicDetail.TwelfthRollNumber</td></tr>
+                <tr><td>12th Year of Passing</td><td>@_application.AcademicDetail.TwelfthYearOfPassing</td></tr>
+                <tr><td>12th Board / University</td><td>@_application.AcademicDetail.TwelfthBoardOrUniversity</td></tr>
+                <tr><td>12th Marks / Percentage</td><td>@_application.AcademicDetail.TwelfthTotalMarks / @_application.AcademicDetail.TwelfthPercentage%</td></tr>
+            </tbody>
+        </MudSimpleTable>
+    </MudPaper>
+}
+
+@code {
+    private StudentApplication? _application;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+        if (user is null)
+        {
+            return;
+        }
+
+        _application = await ApplicationService.GetOrCreateApplicationAsync(user);
+    }
+
+    private async Task PrintAsync()
+    {
+        await JS.InvokeVoidAsync("print");
+    }
+
+    private static string GetCategoryLabel(CategoryType? category) => category switch
+    {
+        CategoryType.SCRandO => "SC (R&O)",
+        CategoryType.SCMandB => "SC (M&B)",
+        CategoryType.ExServiceman => "Ex-Serviceman",
+        CategoryType.PhysicallyHandicapped => "Physically Handicapped",
+        null => "-",
+        _ => category.ToString() ?? "-"
+    };
+}

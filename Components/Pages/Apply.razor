@@ -1,0 +1,177 @@
+@page "/apply"
+@attribute [Authorize]
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IApplicationService ApplicationService
+@inject ISnackbar Snackbar
+
+<PageTitle>Application Form</PageTitle>
+
+@if (_application is null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <MudPaper Class="pa-6">
+        <MudText Typo="Typo.h4" GutterBottom="true">Application Form</MudText>
+        <MudText Typo="Typo.body2" Class="mb-4">
+            Fill all required fields carefully. Validation will appear beside each field as you type.
+        </MudText>
+
+        <EditForm Model="_application" OnValidSubmit="SaveAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <MudText Typo="Typo.h6" Class="section-title">Personal Details</MudText>
+            <MudGrid>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="_application.CandidateName" Label="Candidate Name" Required="true" Immediate="true" HelperText="Enter your full name" Variant="Variant.Outlined" />
+                    <ValidationMessage For="@(() => _application.CandidateName)" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="_application.FatherName" Label="Father Name" Required="true" Immediate="true" Variant="Variant.Outlined" />
+                    <ValidationMessage For="@(() => _application.FatherName)" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="_application.MotherName" Label="Mother Name" Required="true" Immediate="true" Variant="Variant.Outlined" />
+                    <ValidationMessage For="@(() => _application.MotherName)" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudDatePicker @bind-Date="_dob" Label="DOB" Required="true" HelperText="Select date of birth" Variant="Variant.Outlined" />
+                    <ValidationMessage For="@(() => _application.DateOfBirth)" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudSelect T="GenderType?" @bind-Value="_application.Gender" Label="Gender" Required="true" HelperText="Choose one option" Variant="Variant.Outlined">
+                        @foreach (var item in Enum.GetValues<GenderType>())
+                        {
+                            <MudSelectItem T="GenderType?" Value="@((GenderType?)item)">@item</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <ValidationMessage For="@(() => _application.Gender)" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudSelect T="MaritalStatusType?" @bind-Value="_application.MaritalStatus" Label="Marital Status" Required="true" HelperText="Choose one option" Variant="Variant.Outlined">
+                        @foreach (var item in Enum.GetValues<MaritalStatusType>())
+                        {
+                            <MudSelectItem T="MaritalStatusType?" Value="@((MaritalStatusType?)item)">@item</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <ValidationMessage For="@(() => _application.MaritalStatus)" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSelect T="CategoryType?" @bind-Value="_application.Category" Label="Category" Required="true" HelperText="Fee is calculated from this selection" Variant="Variant.Outlined">
+                        @foreach (var item in Enum.GetValues<CategoryType>())
+                        {
+                            <MudSelectItem T="CategoryType?" Value="@((CategoryType?)item)">@GetCategoryLabel(item)</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <ValidationMessage For="@(() => _application.Category)" />
+                </MudItem>
+            </MudGrid>
+
+            <MudText Typo="Typo.h6" Class="section-title">Address Details</MudText>
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_application.Address" Label="Address" Required="true" Immediate="true" Variant="Variant.Outlined" Lines="3" />
+                    <ValidationMessage For="@(() => _application.Address)" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="_application.Tehsil" Label="Tehsil" Required="true" Immediate="true" Variant="Variant.Outlined" />
+                    <ValidationMessage For="@(() => _application.Tehsil)" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="_application.District" Label="District" Required="true" Immediate="true" Variant="Variant.Outlined" />
+                    <ValidationMessage For="@(() => _application.District)" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="_application.PinCode" Label="Pin Code" Required="true" Immediate="true" HelperText="Enter 6 digit pin code" Variant="Variant.Outlined" />
+                    <ValidationMessage For="@(() => _application.PinCode)" />
+                </MudItem>
+            </MudGrid>
+
+            <MudText Typo="Typo.h6" Class="section-title">Contact Details</MudText>
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_application.MobileNumber" Label="Mobile Number" Required="true" Immediate="true" HelperText="Enter exactly 10 digits" Variant="Variant.Outlined" />
+                    <ValidationMessage For="@(() => _application.MobileNumber)" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_application.Email" Label="Email ID" Required="true" Immediate="true" HelperText="Use a valid email address" Variant="Variant.Outlined" />
+                    <ValidationMessage For="@(() => _application.Email)" />
+                </MudItem>
+            </MudGrid>
+
+            <MudText Typo="Typo.h6" Class="section-title">10th Class</MudText>
+            <MudGrid>
+                <MudItem xs="12" md="4"><MudTextField @bind-Value="_application.AcademicDetail.TenthRollNumber" Label="Roll Number" Required="true" Immediate="true" Variant="Variant.Outlined" /></MudItem>
+                <MudItem xs="12" md="4"><MudNumericField @bind-Value="_application.AcademicDetail.TenthYearOfPassing" Label="Year of Passing" Required="true" Immediate="true" Variant="Variant.Outlined" Min="1900" Max="2100" /></MudItem>
+                <MudItem xs="12" md="4"><MudTextField @bind-Value="_application.AcademicDetail.TenthBoardName" Label="Board Name" Required="true" Immediate="true" Variant="Variant.Outlined" /></MudItem>
+                <MudItem xs="12" md="4"><MudNumericField @bind-Value="_application.AcademicDetail.TenthTotalMarks" Label="Total Marks" Immediate="true" Variant="Variant.Outlined" /></MudItem>
+                <MudItem xs="12" md="4"><MudNumericField @bind-Value="_application.AcademicDetail.TenthPercentage" Label="Percentage" Immediate="true" Variant="Variant.Outlined" /></MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" GutterBottom="true">Mandatory Subjects</MudText>
+                    <div class="subject-badges">
+                        <span>English</span>
+                        <span>Hindi</span>
+                        <span>Maths</span>
+                        <span>Science</span>
+                        <span>Social Studies</span>
+                    </div>
+                </MudItem>
+            </MudGrid>
+
+            <MudText Typo="Typo.h6" Class="section-title">12th Class</MudText>
+            <MudGrid>
+                <MudItem xs="12" md="4"><MudTextField @bind-Value="_application.AcademicDetail.TwelfthRollNumber" Label="Roll Number" Required="true" Immediate="true" Variant="Variant.Outlined" /></MudItem>
+                <MudItem xs="12" md="4"><MudNumericField @bind-Value="_application.AcademicDetail.TwelfthYearOfPassing" Label="Year of Passing" Required="true" Immediate="true" Variant="Variant.Outlined" Min="1900" Max="2100" /></MudItem>
+                <MudItem xs="12" md="4"><MudTextField @bind-Value="_application.AcademicDetail.TwelfthBoardOrUniversity" Label="Board / University" Required="true" Immediate="true" Variant="Variant.Outlined" /></MudItem>
+                <MudItem xs="12" md="4"><MudNumericField @bind-Value="_application.AcademicDetail.TwelfthTotalMarks" Label="Total Marks" Immediate="true" Variant="Variant.Outlined" /></MudItem>
+                <MudItem xs="12" md="4"><MudNumericField @bind-Value="_application.AcademicDetail.TwelfthPercentage" Label="Percentage" Immediate="true" Variant="Variant.Outlined" /></MudItem>
+            </MudGrid>
+
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-6">Save Application</MudButton>
+        </EditForm>
+    </MudPaper>
+}
+
+@code {
+    private StudentApplication? _application;
+    private DateTime? _dob;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+        if (user is null)
+        {
+            return;
+        }
+
+        _application = await ApplicationService.GetOrCreateApplicationAsync(user);
+        _application.AcademicDetail ??= new AcademicDetail();
+        _dob = _application.DateOfBirth;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_application is null)
+        {
+            return;
+        }
+
+        _application.DateOfBirth = _dob;
+        await ApplicationService.SaveApplicationAsync(_application);
+        Snackbar.Add("Application saved successfully.", Severity.Success);
+    }
+
+    private static string GetCategoryLabel(CategoryType? category) => category switch
+    {
+        CategoryType.SCRandO => "SC (R&O)",
+        CategoryType.SCMandB => "SC (M&B)",
+        CategoryType.ExServiceman => "Ex-Serviceman",
+        CategoryType.PhysicallyHandicapped => "Physically Handicapped",
+        null => "Select category",
+        _ => category.ToString() ?? "Select category"
+    };
+}

@@ -1,0 +1,121 @@
+@page "/payment"
+@attribute [Authorize]
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IApplicationService ApplicationService
+@inject IPaymentService PaymentService
+@inject ISnackbar Snackbar
+
+<PageTitle>Payment</PageTitle>
+
+@if (_application is null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <MudGrid>
+        <MudItem xs="12" md="7">
+            <MudPaper Class="pa-6">
+                <MudText Typo="Typo.h4" GutterBottom="true">Registration Fee</MudText>
+                <MudText Typo="Typo.body1" Class="mb-4">
+                    Review your category-wise fee and complete payment to generate your registration number.
+                </MudText>
+
+                <MudSimpleTable Dense="true">
+                    <tbody>
+                        <tr><td>Category</td><td>@GetCategoryLabel(_application.Category)</td></tr>
+                        <tr><td>Amount</td><td>Rs. @_fee</td></tr>
+                        <tr><td>Current Status</td><td>@(_application.Payment?.Status.ToString() ?? "Pending")</td></tr>
+                    </tbody>
+                </MudSimpleTable>
+
+                @if (!IsApplicationReadyForPayment(_application))
+                {
+                    <MudAlert Severity="Severity.Warning" Class="mt-4">
+                        Please complete and save the application form before payment.
+                    </MudAlert>
+                }
+                else if (_application.Payment?.Status == PaymentStatus.Success)
+                {
+                    <MudAlert Severity="Severity.Success" Class="mt-4">
+                        Payment confirmed on @_application.Payment.PaidOn?.ToLocalTime().ToString("dd MMM yyyy hh:mm tt"). Registration number: @_application.RegistrationNumber
+                    </MudAlert>
+                }
+                else
+                {
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" Class="mt-4" OnClick="PayAsync">Pay Now</MudButton>
+                }
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="5">
+            <MudPaper Class="pa-6">
+                <MudText Typo="Typo.h6" GutterBottom="true">Fee Rules</MudText>
+                <MudSimpleTable Dense="true">
+                    <tbody>
+                        <tr><td>General / BC / EWS / Sports</td><td>Rs. 600</td></tr>
+                        <tr><td>SC / Physically Handicapped</td><td>Rs. 300</td></tr>
+                        <tr><td>Ex-Serviceman (Self)</td><td>Rs. 0</td></tr>
+                    </tbody>
+                </MudSimpleTable>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private StudentApplication? _application;
+    private decimal _fee;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+        if (user is null)
+        {
+            return;
+        }
+
+        _application = await ApplicationService.GetOrCreateApplicationAsync(user);
+        _fee = _application.Category.HasValue
+            ? ApplicationService.CalculateFee(_application.Category.Value)
+            : 0;
+    }
+
+    private async Task PayAsync()
+    {
+        if (_application is null || !IsApplicationReadyForPayment(_application) || !_application.Category.HasValue)
+        {
+            return;
+        }
+
+        await PaymentService.MarkPaidAsync(_application, _fee);
+        _application = await ApplicationService.GetApplicationByUserIdAsync(_application.UserId);
+        Snackbar.Add("Payment processed successfully.", Severity.Success);
+    }
+
+    private static string GetCategoryLabel(CategoryType? category) => category switch
+    {
+        CategoryType.SCRandO => "SC (R&O)",
+        CategoryType.SCMandB => "SC (M&B)",
+        CategoryType.ExServiceman => "Ex-Serviceman",
+        CategoryType.PhysicallyHandicapped => "Physically Handicapped",
+        null => "Not selected",
+        _ => category.ToString() ?? "Not selected"
+    };
+
+    private static bool IsApplicationReadyForPayment(StudentApplication application) =>
+        !string.IsNullOrWhiteSpace(application.CandidateName) &&
+        !string.IsNullOrWhiteSpace(application.FatherName) &&
+        !string.IsNullOrWhiteSpace(application.MotherName) &&
+        application.DateOfBirth.HasValue &&
+        application.Gender.HasValue &&
+        application.MaritalStatus.HasValue &&
+        application.Category.HasValue &&
+        !string.IsNullOrWhiteSpace(application.Address) &&
+        !string.IsNullOrWhiteSpace(application.MobileNumber) &&
+        !string.IsNullOrWhiteSpace(application.Email) &&
+        !string.IsNullOrWhiteSpace(application.AcademicDetail.TenthRollNumber) &&
+        !string.IsNullOrWhiteSpace(application.AcademicDetail.TwelfthRollNumber);
+}
