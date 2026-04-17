@@ -14,7 +14,7 @@ public class CsvExportService : ICsvExportService
         {
             var registration = Escape(app.RegistrationNumber ?? string.Empty);
             var name = Escape(app.CandidateName);
-            var category = Escape(app.Category?.ToString() ?? string.Empty);
+            var category = Escape(app.Category);
             var paymentStatus = Escape(app.Payment?.Status.ToString() ?? "Pending");
             var amount = app.Payment?.Amount.ToString("0.00") ?? "0.00";
             var mobile = Escape(app.MobileNumber);

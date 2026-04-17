@@ -24,7 +24,7 @@ else
 
                 <MudSimpleTable Dense="true">
                     <tbody>
-                        <tr><td>Category</td><td>@GetCategoryLabel(_application.Category)</td></tr>
+                        <tr><td>Category</td><td>@_application.Category</td></tr>
                         <tr><td>Amount</td><td>Rs. @_fee</td></tr>
                         <tr><td>Current Status</td><td>@(_application.Payment?.Status.ToString() ?? "Pending")</td></tr>
                     </tbody>
@@ -78,14 +78,14 @@ else
         }
 
         _application = await ApplicationService.GetOrCreateApplicationAsync(user);
-        _fee = _application.Category.HasValue
-            ? ApplicationService.CalculateFee(_application.Category.Value)
+        _fee = !string.IsNullOrWhiteSpace(_application.Category)
+            ? ApplicationService.CalculateFee(_application.Category)
             : 0;
     }
 
     private async Task PayAsync()
     {
-        if (_application is null || !IsApplicationReadyForPayment(_application) || !_application.Category.HasValue)
+        if (_application is null || !IsApplicationReadyForPayment(_application))
         {
             return;
         }
@@ -95,24 +95,14 @@ else
         Snackbar.Add("Payment processed successfully.", Severity.Success);
     }
 
-    private static string GetCategoryLabel(CategoryType? category) => category switch
-    {
-        CategoryType.SCRandO => "SC (R&O)",
-        CategoryType.SCMandB => "SC (M&B)",
-        CategoryType.ExServiceman => "Ex-Serviceman",
-        CategoryType.PhysicallyHandicapped => "Physically Handicapped",
-        null => "Not selected",
-        _ => category.ToString() ?? "Not selected"
-    };
-
     private static bool IsApplicationReadyForPayment(StudentApplication application) =>
         !string.IsNullOrWhiteSpace(application.CandidateName) &&
         !string.IsNullOrWhiteSpace(application.FatherName) &&
         !string.IsNullOrWhiteSpace(application.MotherName) &&
         application.DateOfBirth.HasValue &&
-        application.Gender.HasValue &&
-        application.MaritalStatus.HasValue &&
-        application.Category.HasValue &&
+        !string.IsNullOrWhiteSpace(application.Gender) &&
+        !string.IsNullOrWhiteSpace(application.MaritalStatus) &&
+        !string.IsNullOrWhiteSpace(application.Category) &&
         !string.IsNullOrWhiteSpace(application.Address) &&
         !string.IsNullOrWhiteSpace(application.MobileNumber) &&
         !string.IsNullOrWhiteSpace(application.Email) &&

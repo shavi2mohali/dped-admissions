@@ -8,7 +8,7 @@ public interface IApplicationService
     Task<StudentApplication?> GetApplicationByUserIdAsync(string userId);
     Task<StudentApplication?> GetApplicationWithDetailsAsync(int applicationId);
     Task SaveApplicationAsync(StudentApplication application);
-    decimal CalculateFee(CategoryType category);
+    decimal CalculateFee(string category);
     Task<string> EnsureRegistrationNumberAsync(StudentApplication application);
-    Task<List<StudentApplication>> SearchApplicationsAsync(string? nameOrRegistration, CategoryType? category, PaymentStatus? paymentStatus);
+    Task<List<StudentApplication>> SearchApplicationsAsync(string? nameOrRegistration, string? category, PaymentStatus? paymentStatus);
 }

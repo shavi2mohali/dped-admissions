@@ -25,9 +25,9 @@ public class ApplicationService(ApplicationDbContext context) : IApplicationServ
             Email = user.Email ?? string.Empty,
             MobileNumber = user.PhoneNumber ?? string.Empty,
             DateOfBirth = DateTime.Today.AddYears(-18),
-            Gender = GenderType.Other,
-            MaritalStatus = MaritalStatusType.Single,
-            Category = CategoryType.General,
+            Gender = string.Empty,
+            MaritalStatus = "Single",
+            Category = "General",
             AcademicDetail = new AcademicDetail()
         };
 
@@ -70,12 +70,13 @@ public class ApplicationService(ApplicationDbContext context) : IApplicationServ
         await context.SaveChangesAsync();
     }
 
-    public decimal CalculateFee(CategoryType category) => category switch
+    public decimal CalculateFee(string category) => category switch
     {
-        CategoryType.SCRandO => 300,
-        CategoryType.SCMandB => 300,
-        CategoryType.PhysicallyHandicapped => 300,
-        CategoryType.ExServiceman => 0,
+        "SC" => 300,
+        "SC (R&O)" => 300,
+        "SC (M&B)" => 300,
+        "Physically Handicapped" => 300,
+        "Ex-Serviceman" => 0,
         _ => 600
     };
 
@@ -97,7 +98,7 @@ public class ApplicationService(ApplicationDbContext context) : IApplicationServ
         return application.RegistrationNumber;
     }
 
-    public async Task<List<StudentApplication>> SearchApplicationsAsync(string? nameOrRegistration, CategoryType? category, PaymentStatus? paymentStatus)
+    public async Task<List<StudentApplication>> SearchApplicationsAsync(string? nameOrRegistration, string? category, PaymentStatus? paymentStatus)
     {
         var query = context.Applications
             .Include(x => x.Payment)
@@ -112,9 +113,9 @@ public class ApplicationService(ApplicationDbContext context) : IApplicationServ
                 (x.RegistrationNumber != null && x.RegistrationNumber.ToLower().Contains(search)));
         }
 
-        if (category.HasValue)
+        if (!string.IsNullOrWhiteSpace(category))
         {
-            query = query.Where(x => x.Category == category.Value);
+            query = query.Where(x => x.Category == category);
         }
 
         if (paymentStatus.HasValue)

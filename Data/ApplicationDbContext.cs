@@ -37,5 +37,17 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasIndex(x => x.RegistrationNumber)
             .IsUnique()
             .HasFilter("[RegistrationNumber] IS NOT NULL");
+
+        builder.Entity<StudentApplication>(entity =>
+        {
+            entity.Property(x => x.Gender)
+                .HasMaxLength(20);
+
+            entity.Property(x => x.MaritalStatus)
+                .HasMaxLength(20);
+
+            entity.Property(x => x.Category)
+                .HasMaxLength(50);
+        });
     }
 }

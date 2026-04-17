@@ -13,18 +13,18 @@
             <MudTextField @bind-Value="_search" Label="Search by name / registration number" Variant="Variant.Outlined" />
         </MudItem>
         <MudItem xs="12" md="3">
-            <MudSelect T="CategoryType?" @bind-Value="_category" Label="Category" Variant="Variant.Outlined" Clearable="true">
-                @foreach (var category in Enum.GetValues<CategoryType>())
+            <MudSelect T="string" @bind-Value="_category" Label="Category" Variant="Variant.Outlined" Clearable="true">
+                @foreach (var category in CategoryOptions)
                 {
-                    <MudSelectItem Value="@((CategoryType?)category)">@category</MudSelectItem>
+                    <MudSelectItem T="string" Value="@category">@category</MudSelectItem>
                 }
             </MudSelect>
         </MudItem>
         <MudItem xs="12" md="3">
-            <MudSelect T="PaymentStatus?" @bind-Value="_paymentStatus" Label="Payment Status" Variant="Variant.Outlined" Clearable="true">
+            <MudSelect T="string" @bind-Value="_paymentStatus" Label="Payment Status" Variant="Variant.Outlined" Clearable="true">
                 @foreach (var status in Enum.GetValues<PaymentStatus>())
                 {
-                    <MudSelectItem Value="@((PaymentStatus?)status)">@status</MudSelectItem>
+                    <MudSelectItem T="string" Value="@status.ToString()">@status</MudSelectItem>
                 }
             </MudSelect>
         </MudItem>
@@ -65,8 +65,20 @@
 @code {
     private List<StudentApplication> _applications = [];
     private string? _search;
-    private CategoryType? _category;
-    private PaymentStatus? _paymentStatus;
+    private string? _category;
+    private string? _paymentStatus;
+    private static readonly string[] CategoryOptions =
+    [
+        "SC",
+        "BC",
+        "General",
+        "EWS",
+        "SC (R&O)",
+        "SC (M&B)",
+        "Ex-Serviceman",
+        "Sports",
+        "Physically Handicapped"
+    ];
 
     protected override async Task OnInitializedAsync()
     {
@@ -75,7 +87,11 @@
 
     private async Task LoadApplicationsAsync()
     {
-        _applications = await ApplicationService.SearchApplicationsAsync(_search, _category, _paymentStatus);
+        var paymentStatus = Enum.TryParse<PaymentStatus>(_paymentStatus, out var parsedPaymentStatus)
+            ? parsedPaymentStatus
+            : (PaymentStatus?)null;
+
+        _applications = await ApplicationService.SearchApplicationsAsync(_search, _category, paymentStatus);
     }
 
     private async Task ExportCsvAsync()

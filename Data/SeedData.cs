@@ -1,6 +1,8 @@
 using DPEDAdmissionSystem.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace DPEDAdmissionSystem.Data;
 
@@ -9,7 +11,14 @@ public static class SeedData
     public static async Task InitializeAsync(IServiceProvider serviceProvider)
     {
         var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
-        await context.Database.EnsureCreatedAsync();
+        var databaseCreator = context.Database.GetService<IRelationalDatabaseCreator>();
+
+        if (!await databaseCreator.ExistsAsync())
+        {
+            await context.Database.EnsureCreatedAsync();
+        }
+
+        await context.Database.MigrateAsync();
 
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();

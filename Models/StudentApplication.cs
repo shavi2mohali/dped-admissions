@@ -26,13 +26,13 @@ public class StudentApplication
     public DateTime? DateOfBirth { get; set; } = DateTime.Today.AddYears(-18);
 
     [Required(ErrorMessage = "Gender is required")]
-    public GenderType? Gender { get; set; }
+    public string Gender { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Marital status is required")]
-    public MaritalStatusType? MaritalStatus { get; set; }
+    public string MaritalStatus { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Category is required")]
-    public CategoryType? Category { get; set; }
+    public string Category { get; set; } = string.Empty;
 
     [Required]
     [StringLength(300)]

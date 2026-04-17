@@ -42,28 +42,28 @@ else
                     <ValidationMessage For="@(() => _application.DateOfBirth)" />
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudSelect T="GenderType?" @bind-Value="_application.Gender" Label="Gender" Required="true" HelperText="Choose one option" Variant="Variant.Outlined">
-                        @foreach (var item in Enum.GetValues<GenderType>())
+                    <MudSelect T="string" @bind-Value="_application.Gender" Label="Gender" Required="true" HelperText="Choose one option" Variant="Variant.Outlined">
+                        @foreach (var item in GenderOptions)
                         {
-                            <MudSelectItem T="GenderType?" Value="@((GenderType?)item)">@item</MudSelectItem>
+                            <MudSelectItem T="string" Value="@item">@item</MudSelectItem>
                         }
                     </MudSelect>
                     <ValidationMessage For="@(() => _application.Gender)" />
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudSelect T="MaritalStatusType?" @bind-Value="_application.MaritalStatus" Label="Marital Status" Required="true" HelperText="Choose one option" Variant="Variant.Outlined">
-                        @foreach (var item in Enum.GetValues<MaritalStatusType>())
+                    <MudSelect T="string" @bind-Value="_application.MaritalStatus" Label="Marital Status" Required="true" HelperText="Choose one option" Variant="Variant.Outlined">
+                        @foreach (var item in MaritalStatusOptions)
                         {
-                            <MudSelectItem T="MaritalStatusType?" Value="@((MaritalStatusType?)item)">@item</MudSelectItem>
+                            <MudSelectItem T="string" Value="@item">@item</MudSelectItem>
                         }
                     </MudSelect>
                     <ValidationMessage For="@(() => _application.MaritalStatus)" />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudSelect T="CategoryType?" @bind-Value="_application.Category" Label="Category" Required="true" HelperText="Fee is calculated from this selection" Variant="Variant.Outlined">
-                        @foreach (var item in Enum.GetValues<CategoryType>())
+                    <MudSelect T="string" @bind-Value="_application.Category" Label="Category" Required="true" HelperText="Fee is calculated from this selection" Variant="Variant.Outlined">
+                        @foreach (var item in CategoryOptions)
                         {
-                            <MudSelectItem T="CategoryType?" Value="@((CategoryType?)item)">@GetCategoryLabel(item)</MudSelectItem>
+                            <MudSelectItem T="string" Value="@item">@item</MudSelectItem>
                         }
                     </MudSelect>
                     <ValidationMessage For="@(() => _application.Category)" />
@@ -138,6 +138,20 @@ else
 @code {
     private StudentApplication? _application;
     private DateTime? _dob;
+    private static readonly string[] GenderOptions = ["Male", "Female"];
+    private static readonly string[] MaritalStatusOptions = ["Single", "Married", "Other"];
+    private static readonly string[] CategoryOptions =
+    [
+        "SC",
+        "BC",
+        "General",
+        "EWS",
+        "SC (R&O)",
+        "SC (M&B)",
+        "Ex-Serviceman",
+        "Sports",
+        "Physically Handicapped"
+    ];
 
     protected override async Task OnInitializedAsync()
     {
@@ -165,13 +179,4 @@ else
         Snackbar.Add("Application saved successfully.", Severity.Success);
     }
 
-    private static string GetCategoryLabel(CategoryType? category) => category switch
-    {
-        CategoryType.SCRandO => "SC (R&O)",
-        CategoryType.SCMandB => "SC (M&B)",
-        CategoryType.ExServiceman => "Ex-Serviceman",
-        CategoryType.PhysicallyHandicapped => "Physically Handicapped",
-        null => "Select category",
-        _ => category.ToString() ?? "Select category"
-    };
 }

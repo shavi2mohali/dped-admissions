@@ -39,7 +39,7 @@ else
                 <tr><td>DOB</td><td>@_application.DateOfBirth?.ToString("dd-MM-yyyy")</td></tr>
                 <tr><td>Gender</td><td>@_application.Gender</td></tr>
                 <tr><td>Marital Status</td><td>@_application.MaritalStatus</td></tr>
-                <tr><td>Category</td><td>@GetCategoryLabel(_application.Category)</td></tr>
+                <tr><td>Category</td><td>@_application.Category</td></tr>
             </tbody>
         </MudSimpleTable>
 
@@ -90,14 +90,4 @@ else
     {
         await JS.InvokeVoidAsync("print");
     }
-
-    private static string GetCategoryLabel(CategoryType? category) => category switch
-    {
-        CategoryType.SCRandO => "SC (R&O)",
-        CategoryType.SCMandB => "SC (M&B)",
-        CategoryType.ExServiceman => "Ex-Serviceman",
-        CategoryType.PhysicallyHandicapped => "Physically Handicapped",
-        null => "-",
-        _ => category.ToString() ?? "-"
-    };
 }
