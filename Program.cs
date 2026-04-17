@@ -12,6 +12,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddControllers();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddHttpClient();
 builder.Services
@@ -62,44 +63,7 @@ app.UseAntiforgery();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapPost("/account/register", async (
-    [FromForm] string name,
-    [FromForm] string email,
-    [FromForm] string mobileNumber,
-    [FromForm] string password,
-    [FromForm] string confirmPassword,
-    UserManager<ApplicationUser> userManager,
-    SignInManager<ApplicationUser> signInManager,
-    INotificationService notificationService) =>
-{
-    if (password != confirmPassword)
-    {
-        return Results.LocalRedirect("/register?error=Passwords%20do%20not%20match");
-    }
-
-    var user = new ApplicationUser
-    {
-        FullName = name,
-        UserName = email,
-        Email = email,
-        PhoneNumber = mobileNumber,
-        EmailConfirmed = true,
-        PhoneNumberConfirmed = true
-    };
-
-    var result = await userManager.CreateAsync(user, password);
-    if (!result.Succeeded)
-    {
-        var error = Uri.EscapeDataString(string.Join(" ", result.Errors.Select(x => x.Description)));
-        return Results.LocalRedirect($"/register?error={error}");
-    }
-
-    await userManager.AddToRoleAsync(user, "Student");
-    await notificationService.SendAsync(mobileNumber, $"Welcome {name}, your DPED registration account has been created.");
-    await signInManager.SignInAsync(user, isPersistent: false);
-    return Results.LocalRedirect("/");
-});
+app.MapControllers();
 
 app.MapPost("/account/login", async (
     [FromForm] string email,

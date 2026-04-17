@@ -1,4 +1,4 @@
-@page "/register"
+@* Duplicate register page; the active register route is implemented in Components/Register.razor *@
 @using System.ComponentModel.DataAnnotations
 
 <PageTitle>Register</PageTitle>

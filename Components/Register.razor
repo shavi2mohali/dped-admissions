@@ -1,4 +1,5 @@
 @page "/register"
+@rendermode InteractiveServer
 @using System.ComponentModel.DataAnnotations
 @using DPEDAdmissionSystem.Models
 @inject DPEDAdmissionSystem.Services.AuthService AuthService
@@ -9,30 +10,35 @@
 <MudPaper Class="pa-6 mx-auto auth-card" Elevation="3" Style="max-width:500px;">
     <MudText Typo="Typo.h4" GutterBottom="true">Create Account</MudText>
 
-    <EditForm Model="@model" OnValidSubmit="HandleRegister">
+    <EditForm Model="@model" OnValidSubmit="HandleRegister" FormName="registerForm">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
         <MudTextField Label="Name"
                       @bind-Value="model.Name"
+                      For="@(() => model.Name)"
                       Required="true" />
 
         <MudTextField Label="Email"
                       @bind-Value="model.Email"
+                      For="@(() => model.Email)"
                       Required="true" />
 
         <MudTextField Label="Mobile Number"
                       @bind-Value="model.MobileNumber"
+                      For="@(() => model.MobileNumber)"
                       Required="true"
                       Immediate="true" />
 
         <MudTextField Label="Password"
                       @bind-Value="model.Password"
+                      For="@(() => model.Password)"
                       InputType="InputType.Password"
                       Required="true" />
 
         <MudTextField Label="Confirm Password"
                       @bind-Value="model.ConfirmPassword"
+                      For="@(() => model.ConfirmPassword)"
                       InputType="InputType.Password"
                       Required="true" />
 
@@ -65,7 +71,8 @@
             Name = model.Name,
             Email = model.Email,
             MobileNumber = model.MobileNumber,
-            Password = model.Password
+            Password = model.Password,
+            ConfirmPassword = model.ConfirmPassword
         };
 
         var result = await AuthService.Register(request);
@@ -83,22 +90,22 @@
     public class RegisterModel
     {
         [Required]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [Required]
         [RegularExpression(@"^[6-9]\d{9}$", ErrorMessage = "Enter valid 10-digit mobile number")]
-        public string MobileNumber { get; set; }
+        public string MobileNumber { get; set; } = string.Empty;
 
         [Required]
         [MinLength(6)]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
 
         [Required]
         [Compare("Password", ErrorMessage = "Passwords do not match")]
-        public string ConfirmPassword { get; set; }
+        public string ConfirmPassword { get; set; } = string.Empty;
     }
 }

@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using DPEDAdmissionSystem.Models;
+using Microsoft.AspNetCore.Components;
 
 namespace DPEDAdmissionSystem.Services
 {
@@ -7,9 +8,13 @@ namespace DPEDAdmissionSystem.Services
     {
         private readonly HttpClient _http;
 
-        public AuthService(HttpClient http)
+        public AuthService(HttpClient http, NavigationManager navigationManager)
         {
             _http = http;
+            if (_http.BaseAddress == null)
+            {
+                _http.BaseAddress = new Uri(navigationManager.BaseUri);
+            }
         }
 
         public async Task<(bool Success, string Message)> Register(RegisterRequest request)
